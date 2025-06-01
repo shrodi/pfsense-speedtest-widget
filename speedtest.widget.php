@@ -62,6 +62,15 @@
  *     rm -f /usr/local/www/widgets/widgets/speedtest.widget.php
  */
 
+// Replaces French character HTML entities
+function fix_french_entities($results) {
+
+	$accents = ['/À/','/à/','/Â/','/â/','/Ç/','/ç/','/É/','/é/','/È/','/è/','/Ê/','/ê/','/Ë/','/ë/','/Î/','/î/','/Ï/','/ï/','/Ô/','/ô/'];
+	$replace = ['A','a','A','a','C','c','E','e','E','e','E','e','E','e','I','i','I','i','O','o'];
+
+	return preg_replace($accents, $replace, $results);
+}
+
 require_once("guiconfig.inc");
 
 if (is_numeric($_REQUEST['serverid'])) {
@@ -74,10 +83,12 @@ if (is_numeric($_REQUEST['serverid'])) {
     if ($_REQUEST['serverid'] == 0) {
         // AUTOSELECT
         $results = shell_exec("speedtest -f json --selection-details --accept-license --accept-gdpr" . $ifaceipswitch);
+        $results = fix_french_entities($results);
     } else {
         // MANUAL SERVER SELECTION
         $serverlist = shell_exec("speedtest -f json --servers --accept-license --accept-gdpr" . $ifaceipswitch);
         $results    = shell_exec("speedtest -f json --server-id=" . $_REQUEST['serverid'] . $ifaceipswitch . " --selection-details --accept-license --accept-gdpr");
+        $results = fix_french_entities($results);
         $resultsobj = json_decode($results, true);
         $serverlistobj = json_decode($serverlist, true);
 
